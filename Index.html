@@ -220,7 +220,11 @@
       },
       "Transport & Mobility": {
         "Vehicle 1": { "Car": 4, "Auto": 3, "Motorcycle/Scooter": 2, "Bicycle": 1, "None": 0 },
-        "Vehicle 2": { "Car": 4, "Auto": 3, "Motorcycle/Scooter": 2, "Bicycle": 1, "None": 0 }
+        "Vehicle 2": { "Car": 4, "Auto": 3, "Motorcycle/Scooter": 2, "Bicycle": 1, "None": 0 },
+        "Vehicle 3": { "Car": 4, "Auto": 3, "Motorcycle/Scooter": 2, "Bicycle": 1, "None": 0 },
+        "Vehicle 4": { "Car": 4, "Auto": 3, "Motorcycle/Scooter": 2, "Bicycle": 1, "None": 0 },
+        "Vehicle 4": { "Car": 4, "Auto": 3, "Motorcycle/Scooter": 2, "Bicycle": 1, "None": 0 }
+        
       }
     };
 
@@ -382,10 +386,11 @@ function calculateScore() {
       if (weightedSections[section]) {
         const qty = parseInt(input.value) || 0;
         score = qty * sectionFactors[factor];
-        value = `${qty} × ${sectionFactors[factor]} = ${score}`;
+        value = qty; // ✅ Only show what user entered
       } else {
         score = sectionFactors[factor][input.value] || 0;
       }
+      
 
       sectionScore += score;
       summary += `<li><strong>${factor}</strong>: ${value}</li>`;
@@ -398,6 +403,7 @@ function calculateScore() {
     total += cappedScore;
 
     summary += `<li><strong>Section Total (Capped):</strong> ${cappedScore} / ${maxCap}</li>`;
+
     summary += "</ul>";
   }
 
@@ -413,6 +419,14 @@ function calculateScore() {
   summary += `<h3>Total Score: ${total} / ${maxPossibleScore} (${percentage}%)</h3><p><strong>Financial Band:</strong> ${band}</p>`;
 
   document.getElementById("result").innerHTML = summary;
+  // Store summary info for PDF header
+window.finalScoreSummary = {
+  total,
+  maxPossibleScore,
+  percentage,
+  band
+};
+
   document.getElementById("result").scrollIntoView({ behavior: "smooth" });
 }
 
@@ -436,8 +450,23 @@ function calculateScore() {
 
     doc.setFontSize(16);
     doc.text("Household Scoring Report", 10, y);
+    if (window.finalScoreSummary) {
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      const summaryText1 = `Total Score: ${window.finalScoreSummary.total} / ${window.finalScoreSummary.maxPossibleScore} (${window.finalScoreSummary.percentage}%)`;
+      const summaryText2 = `Band: ${window.finalScoreSummary.band}`;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      
+      doc.text(summaryText1, pageWidth - doc.getTextWidth(summaryText1) - 10, y);
+      y += 6;
+      doc.text(summaryText2, pageWidth - doc.getTextWidth(summaryText2) - 10, y);
+      y += 6;
+    }
+    
     y += 10;
 
+
+    
     // Form details
     const fields = ["Zone", "Branch", "ApplicationNumber", "ApplicantName", "RoName", "RoID", "CreditEmpID", "CreditEmpName", "mobileNumber"];
     doc.setFontSize(11);
